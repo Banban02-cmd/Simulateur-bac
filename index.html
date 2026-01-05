@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur Bac Général</title>
+    <title>Simulateur Bac Général (À jour Réforme 2027)</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -11,6 +11,7 @@
             --card: #ffffff;
             --text: #0f172a;
             --border: #e2e8f0;
+            --new-tag: #16a34a;
         }
 
         body {
@@ -34,7 +35,6 @@
 
         h1 { text-align: center; color: var(--primary); margin: 0; }
         
-        /* Selecteur de Session */
         .session-selector {
             text-align: center;
             margin: 20px 0 30px 0;
@@ -108,7 +108,25 @@
             border: 1px solid #fef3c7;
         }
 
-        /* Ligne spéciale pour la spé abandonnée (Mode Terminale) */
+        .row-new {
+            background-color: #f0fdf4;
+            padding-left: 10px;
+            padding-right: 10px;
+            border-radius: 6px;
+            margin: 5px 0;
+            border: 1px solid #dcfce7;
+        }
+        .tag-new {
+            display: inline-block;
+            font-size: 0.7rem;
+            background: var(--new-tag);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
         .row-abandon-fixe {
             background-color: #fef2f2;
             border-bottom: 1px solid #fee2e2;
@@ -166,7 +184,6 @@
             color: #d97706;
         }
 
-        /* Blocs de simulation Spécialités (Mode 1ère) */
         .spe-box {
             border: 1px solid var(--border);
             padding: 15px;
@@ -190,7 +207,6 @@
             font-size: 0.9rem;
         }
 
-        /* Footer */
         .footer-res {
             position: fixed;
             bottom: 20px;
@@ -222,7 +238,6 @@
             .grade-display { font-size: 1.5rem; }
             .row { grid-template-columns: 1.5fr 50px 2fr; gap: 8px; font-size: 0.9rem; }
             .mode-switch { font-size: 0.7rem; }
-            .radio-abandon { white-space: normal; text-align: right; font-size: 0.8rem; }
             .session-selector { font-size: 0.9rem; padding: 10px; }
             .session-selector select { width: 100%; margin-top: 5px; }
         }
@@ -236,38 +251,44 @@
     <div class="session-selector">
         <label for="session_select">Je suis actuellement en :</label>
         <select id="session_select" onchange="changeSession()">
-            <option value="2027">1ère (Bac 2027)</option>
+            <option value="2027">1ère (Bac 2027) - Réforme Maths</option>
             <option value="2026">Terminale (Bac 2026)</option>
         </select>
+        <div id="info_session" style="font-size:0.85rem; color:#475569; margin-top:8px; font-style:italic;">
+            Pour le Bac 2027, une épreuve anticipée de Maths est ajoutée et le Grand Oral passe coeff 8.
+        </div>
     </div>
 
     <h2>1. Épreuves anticipées</h2>
+    
     <div class="row">
         <label>Français (Écrit + Oral)</label>
         <div class="coeff-box">Coeff 10</div>
         <input type="number" id="fr" placeholder="/20" oninput="calc()">
     </div>
     
-    <div class="row" id="row_maths_anticipe">
-        <label>Mathématiques (Nouv. Épreuve)</label>
-        <div class="coeff-box">Coeff 2</div>
-        <input type="number" id="maths_anticipe" placeholder="/20" oninput="calc()">
+    <div class="row row-new hidden" id="row_maths_anticip">
+        <label>
+            Mathématiques <span class="tag-new">Nouveau</span>
+            <div style="font-size:0.75rem; color:#166534; font-weight:normal;">Écrit (Juin de 1ère) - Pour tous</div>
+        </label>
+        <div class="coeff-box" style="background:#dcfce7; color:#166534;">Coeff 2</div>
+        <input type="number" id="maths_anticip" placeholder="/20" oninput="calc()">
     </div>
 
     <h2>
-        <span>2. Contrôle continu</span>
+        <span>2. Contrôle continu (40%)</span>
         <div class="mode-switch" id="mode_switch_container" onclick="toggleMode()">
             <div class="mode-option active" id="btn-global">Moyenne Globale</div>
             <div class="mode-option" id="btn-detail">Détail 1ère/Term</div>
         </div>
     </h2>
     <p style="font-size: 0.85rem; color: #666; margin-top:-10px; margin-bottom: 20px; text-align: center;">
-        <span id="info-global">Saisissez une moyenne estimée sur les 2 ans.</span>
+        <span id="info-global">Moyenne annuelle du bulletin (tous les trimestres).</span>
         <span id="info-detail" class="hidden">Saisissez séparément vos moyennes de 1ère et de Terminale.</span>
     </p>
 
     <div id="tc-container">
-        
         <div class="row">
             <label>LVA</label>
             <div class="coeff-box">Coeff 6</div>
@@ -285,24 +306,6 @@
             <div class="double-input inp-detail hidden">
                 <input type="number" id="lvb_1" placeholder="1ère" oninput="calc()">
                 <input type="number" id="lvb_t" placeholder="Term" oninput="calc()">
-            </div>
-        </div>
-
-        <div class="row row-option">
-            <label class="option-check">
-                <input type="checkbox" id="check_lvc" onchange="toggleLVC()">
-                Option LVC
-            </label>
-            <div id="lvc_coeff" class="coeff-box hidden">Coeff 4</div>
-            <div id="lvc_inputs" class="hidden" style="width:100%">
-                <input type="number" id="lvc_global" class="inp-global" placeholder="Moy. 2 ans" oninput="calc()">
-                <div class="double-input inp-detail hidden">
-                    <input type="number" id="lvc_1" placeholder="1ère" oninput="calc()">
-                    <input type="number" id="lvc_t" placeholder="Term" oninput="calc()">
-                </div>
-            </div>
-            <div id="lvc_placeholder" style="color:#aaa; font-style:italic; font-size:0.9rem; grid-column: 2 /span 2;">
-                (Cochez pour activer)
             </div>
         </div>
 
@@ -346,76 +349,87 @@
             </div>
         </div>
 
+        <div class="row row-option">
+            <label class="option-check">
+                <input type="checkbox" id="check_lvc" onchange="toggleLVC()">
+                Option LVC
+            </label>
+            <div id="lvc_coeff" class="coeff-box hidden">Coeff 4</div>
+            <div id="lvc_inputs" class="hidden" style="width:100%">
+                <input type="number" id="lvc_global" class="inp-global" placeholder="Moy. 2 ans" oninput="calc()">
+                <div class="double-input inp-detail hidden">
+                    <input type="number" id="lvc_1" placeholder="1ère" oninput="calc()">
+                    <input type="number" id="lvc_t" placeholder="Term" oninput="calc()">
+                </div>
+            </div>
+        </div>
+
         <div class="row row-abandon-fixe hidden" id="row_spe_abandon_fixe">
             <label style="color:#b91c1c;">Spécialité abandonnée (en 1ère)</label>
             <div class="coeff-box" style="background:#fee2e2; color:#b91c1c;">Coeff 8</div>
             <input type="number" id="spe_abandon_fixe_val" placeholder="Moyenne 1ère" oninput="calc()">
         </div>
-
-    </div>
-
-    <div id="block_spe_simulation">
-        <h2>3. Choix des Spécialités</h2>
-        <div class="spe-box" id="box_sim_spe1">
-            <div class="spe-header">
-                <span>Spécialité A</span>
-                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe1" onchange="calc()"> J'abandonne celle-ci</label>
-            </div>
-            <div class="row" style="border:none; padding:0;">
-                <div class="coeff-box" id="lbl_sim_spe1">Coeff 16</div>
-                <input type="number" id="note_sim_spe1" placeholder="Moyenne" oninput="calc()">
-            </div>
-        </div>
-
-        <div class="spe-box" id="box_sim_spe2">
-            <div class="spe-header">
-                <span>Spécialité B</span>
-                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe2" onchange="calc()"> J'abandonne celle-ci</label>
-            </div>
-            <div class="row" style="border:none; padding:0;">
-                <div class="coeff-box" id="lbl_sim_spe2">Coeff 16</div>
-                <input type="number" id="note_sim_spe2" placeholder="Moyenne" oninput="calc()">
-            </div>
-        </div>
-
-        <div class="spe-box" id="box_sim_spe3">
-            <div class="spe-header">
-                <span>Spécialité C</span>
-                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe3" checked onchange="calc()"> J'abandonne celle-ci</label>
-            </div>
-            <div class="row" style="border:none; padding:0;">
-                <div class="coeff-box" id="lbl_sim_spe3">Coeff 8</div>
-                <input type="number" id="note_sim_spe3" placeholder="Moyenne" oninput="calc()">
-            </div>
-        </div>
-    </div>
-
-    <div id="block_spe_terminale" class="hidden">
-        <h2>3. Épreuves Terminales & Options</h2>
         
-        <div class="row">
-            <label>Spécialité 1 (Épreuve)</label>
-            <div class="coeff-box">Coeff 16</div>
-            <input type="number" id="term_spe1" placeholder="/20" oninput="calc()">
-        </div>
-
-        <div class="row">
-            <label>Spécialité 2 (Épreuve)</label>
-            <div class="coeff-box">Coeff 16</div>
-            <input type="number" id="term_spe2" placeholder="/20" oninput="calc()">
-        </div>
-
-        <div class="row row-option" style="margin-top:20px; background-color:#eff6ff; border-color:#bfdbfe;">
+        <div class="row row-option hidden" id="row_opt_maths_cc" style="background-color:#eff6ff; border-color:#bfdbfe;">
             <label>Option Maths (Terminale)</label>
-            
             <div style="grid-column: 2 / span 2; display:flex; gap:10px;">
                 <select id="opt_math_type" class="inp-select" onchange="toggleOptMath()">
                     <option value="none">Aucune</option>
                     <option value="compl">Maths Complémentaires (Coeff 2)</option>
                     <option value="expert">Maths Expertes (Coeff 2)</option>
                 </select>
-                <input type="number" id="opt_math_val" class="hidden" placeholder="/20" oninput="calc()">
+                <input type="number" id="opt_math_val" class="hidden" placeholder="Moyenne Scolaire" oninput="calc()">
             </div>
+        </div>
+    </div>
+
+    <div id="block_spe_simulation">
+        <h2>3. Choix des Spécialités</h2>
+        <div class="spe-box" id="box_sim_spe1">
+            <div class="spe-header">
+                <span>Spécialité 1</span>
+                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe1" onchange="calc()"> J'abandonne celle-ci</label>
+            </div>
+            <div class="row" style="border:none; padding:0;">
+                <div class="coeff-box" id="lbl_sim_spe1">Coeff 16</div>
+                <input type="number" id="note_sim_spe1" placeholder="Moyenne estimée" oninput="calc()">
+            </div>
+        </div>
+
+        <div class="spe-box" id="box_sim_spe2">
+            <div class="spe-header">
+                <span>Spécialité 2</span>
+                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe2" onchange="calc()"> J'abandonne celle-ci</label>
+            </div>
+            <div class="row" style="border:none; padding:0;">
+                <div class="coeff-box" id="lbl_sim_spe2">Coeff 16</div>
+                <input type="number" id="note_sim_spe2" placeholder="Moyenne estimée" oninput="calc()">
+            </div>
+        </div>
+
+        <div class="spe-box" id="box_sim_spe3">
+            <div class="spe-header">
+                <span>Spécialité 3</span>
+                <label class="radio-abandon"><input type="radio" name="abandon_sim" value="spe3" checked onchange="calc()"> J'abandonne celle-ci</label>
+            </div>
+            <div class="row" style="border:none; padding:0;">
+                <div class="coeff-box" id="lbl_sim_spe3">Coeff 8</div>
+                <input type="number" id="note_sim_spe3" placeholder="Moyenne estimée" oninput="calc()">
+            </div>
+        </div>
+    </div>
+
+    <div id="block_spe_terminale" class="hidden">
+        <h2>3. Épreuves Terminales</h2>
+        <div class="row">
+            <label>Spécialité 1 (Épreuve)</label>
+            <div class="coeff-box">Coeff 16</div>
+            <input type="number" id="term_spe1" placeholder="/20" oninput="calc()">
+        </div>
+        <div class="row">
+            <label>Spécialité 2 (Épreuve)</label>
+            <div class="coeff-box">Coeff 16</div>
+            <input type="number" id="term_spe2" placeholder="/20" oninput="calc()">
         </div>
     </div>
 
@@ -443,80 +457,83 @@
 <script>
     let modeDetail = false;
 
+    function val(id) {
+        const el = document.getElementById(id);
+        if(!el) return 0;
+        const v = el.value;
+        return v === "" ? 0 : parseFloat(v);
+    }
+
     function changeSession() {
-        const session = document.getElementById('session_select').value;
-        const rowMaths = document.getElementById('row_maths_anticipe');
+        const sessionEl = document.getElementById('session_select');
+        const session = sessionEl.value;
+        const info = document.getElementById('info_session');
+
+        const rowMathAnt = document.getElementById('row_maths_anticip');
+        const lblGO = document.getElementById('lbl_go_coeff');
+        
+        // Mode switch elements
         const switchContainer = document.getElementById('mode_switch_container');
-        
-        // Elements spécifiques Terminale
         const rowAbandonFixe = document.getElementById('row_spe_abandon_fixe');
+        const rowOptMathsCC = document.getElementById('row_opt_maths_cc');
         const blockSpeTerm = document.getElementById('block_spe_terminale');
-        
-        // Elements spécifiques 1ère
         const blockSpeSim = document.getElementById('block_spe_simulation');
         const h2Philo = document.getElementById('h2_philo_go');
-
-        // Coefficient Grand Oral
-        const lblGO = document.getElementById('lbl_go_coeff');
+        const infoGlobal = document.getElementById('info-global');
+        const infoDetail = document.getElementById('info-detail');
 
         if (session === '2026') {
-            // --- MODE TERMINALE ---
-            // 1. Masquer Maths anticipées
-            rowMaths.classList.add('hidden');
-            
-            // 2. Forcer le mode Détail
-            modeDetail = true;
-            switchContainer.classList.add('hidden');
-            document.getElementById('info-global').classList.add('hidden');
-            document.getElementById('info-detail').classList.remove('hidden');
-
-            // 3. Afficher la Spé Abandonnée dans le Controle Continu
-            rowAbandonFixe.classList.remove('hidden');
-
-            // 4. Afficher le bloc d'épreuves terminales (Spé 1 & 2)
-            blockSpeTerm.classList.remove('hidden');
-
-            // 5. Masquer le bloc de simulation
-            blockSpeSim.classList.add('hidden');
-            
-            // 6. Masquer titre intermédiaire
-            h2Philo.style.display = 'none';
-
-            // 7. MAJ Coefficient GO (10)
+            // TERMINALES (Bac 2026)
+            // Pas de Maths Anticipées, GO Coeff 10
+            info.innerText = "Pour le Bac 2026, pas d'épreuve anticipée de Maths. Grand Oral Coeff 10.";
+            rowMathAnt.classList.add('hidden');
             lblGO.innerText = "Coeff 10";
 
+            // Force Detail Mode
+            modeDetail = true;
+            if(switchContainer) switchContainer.classList.add('hidden');
+            if(infoGlobal) infoGlobal.classList.add('hidden');
+            if(infoDetail) infoDetail.classList.remove('hidden');
+
+            if(rowAbandonFixe) rowAbandonFixe.classList.remove('hidden');
+            if(rowOptMathsCC) rowOptMathsCC.classList.remove('hidden');
+
+            if(blockSpeTerm) blockSpeTerm.classList.remove('hidden');
+            if(blockSpeSim) blockSpeSim.classList.add('hidden');
+            if(h2Philo) h2Philo.style.display = 'none';
+
         } else {
-            // --- MODE 1ÈRE ---
-            // 1. Afficher Maths
-            rowMaths.classList.remove('hidden');
-            
-            // 2. Mode standard
-            modeDetail = false;
-            switchContainer.classList.remove('hidden');
-            document.getElementById('btn-global').classList.add('active');
-            document.getElementById('btn-detail').classList.remove('active');
-            document.getElementById('info-global').classList.remove('hidden');
-            document.getElementById('info-detail').classList.add('hidden');
-
-            // 3. Masquer la Spé Abandonnée fixe
-            rowAbandonFixe.classList.add('hidden');
-
-            // 4. Masquer le bloc d'épreuves terminales fixes
-            blockSpeTerm.classList.add('hidden');
-
-            // 5. Afficher le bloc de simulation
-            blockSpeSim.classList.remove('hidden');
-
-            // 6. Afficher titre intermédiaire
-            h2Philo.style.display = 'flex';
-            h2Philo.innerText = "4. Épreuves Terminales";
-
-            // 7. MAJ Coefficient GO (8 pour les 1ères)
+            // PREMIÈRES (Bac 2027)
+            // Maths Anticipées OUI, GO Coeff 8
+            info.innerText = "Réforme : Épreuve Maths Anticipée (Coeff 2) + Grand Oral (Coeff 8).";
+            rowMathAnt.classList.remove('hidden');
             lblGO.innerText = "Coeff 8";
+
+            // Standard Mode
+            modeDetail = false;
+            if(switchContainer) switchContainer.classList.remove('hidden');
+            
+            const btnGlobal = document.getElementById('btn-global');
+            const btnDetail = document.getElementById('btn-detail');
+            if(btnGlobal) btnGlobal.classList.add('active');
+            if(btnDetail) btnDetail.classList.remove('active');
+
+            if(infoGlobal) infoGlobal.classList.remove('hidden');
+            if(infoDetail) infoDetail.classList.add('hidden');
+
+            if(rowAbandonFixe) rowAbandonFixe.classList.add('hidden');
+            if(rowOptMathsCC) rowOptMathsCC.classList.add('hidden');
+
+            if(blockSpeTerm) blockSpeTerm.classList.add('hidden');
+            if(blockSpeSim) blockSpeSim.classList.remove('hidden');
+            if(h2Philo) {
+                h2Philo.style.display = 'flex';
+                h2Philo.innerText = "4. Épreuves Terminales";
+            }
         }
 
         refreshVisibility();
-        toggleOptMath(); // MAJ affichage option maths
+        toggleOptMath();
         calc();
     }
 
@@ -551,14 +568,14 @@
     }
 
     function toggleOptMath() {
-        const type = document.getElementById('opt_math_type').value;
-        const input = document.getElementById('opt_math_val');
-        
-        if (type === 'none') {
-            input.classList.add('hidden');
-            input.value = '';
+        const sel = document.getElementById('opt_math_type');
+        const inp = document.getElementById('opt_math_val');
+        if (!sel || !inp) return;
+        if (sel.value === 'none') {
+            inp.classList.add('hidden');
+            inp.value = '';
         } else {
-            input.classList.remove('hidden');
+            inp.classList.remove('hidden');
         }
         calc();
     }
@@ -567,4 +584,137 @@
         const globals = document.querySelectorAll('.inp-global');
         const details = document.querySelectorAll('.inp-detail');
 
-        if(modeDetail
+        if(modeDetail) {
+            globals.forEach(el => el.classList.add('hidden'));
+            details.forEach(el => el.classList.remove('hidden'));
+        } else {
+            globals.forEach(el => el.classList.remove('hidden'));
+            details.forEach(el => el.classList.add('hidden'));
+        }
+        
+        const checkLVC = document.getElementById('check_lvc');
+        if(!checkLVC) return;
+        const lvcInputs = document.getElementById('lvc_inputs');
+        const lvcCoeff = document.getElementById('lvc_coeff');
+        if(checkLVC.checked) {
+            lvcInputs.classList.remove('hidden');
+            lvcCoeff.classList.remove('hidden');
+            if(modeDetail) {
+                 lvcInputs.querySelector('.inp-global').classList.add('hidden');
+                 lvcInputs.querySelector('.inp-detail').classList.remove('hidden');
+            } else {
+                 lvcInputs.querySelector('.inp-global').classList.remove('hidden');
+                 lvcInputs.querySelector('.inp-detail').classList.add('hidden');
+            }
+        } else {
+            lvcInputs.classList.add('hidden');
+            lvcCoeff.classList.add('hidden');
+        }
+    }
+
+    function calc() {
+        let totalPts = 0;
+        let totalCoef = 0;
+
+        const add = (pts, coef) => {
+            totalPts += pts;
+            totalCoef += coef;
+        };
+
+        const session = document.getElementById('session_select').value;
+
+        // --- 1. Anticipées ---
+        add(val('fr') * 10, 10);
+        
+        // Nouvelle Epreuve Maths (Seulement Session 2027)
+        if (session === '2027') {
+            add(val('maths_anticip') * 2, 2);
+        }
+
+        // --- 2. Tronc Commun / CC ---
+        const matieres = [
+            { id: 'lva', coef: 6 },
+            { id: 'lvb', coef: 6 },
+            { id: 'es', coef: 6 },
+            { id: 'eps', coef: 6 },
+            { id: 'hg', coef: 6 },
+            { id: 'emc', coef: 2 }
+        ];
+
+        matieres.forEach(m => {
+            let note = modeDetail ? (val(m.id + '_1') + val(m.id + '_t')) / 2 : val(m.id + '_global');
+            add(note * m.coef, m.coef);
+        });
+
+        // Option LVC
+        if(document.getElementById('check_lvc').checked) {
+            let noteLVC = modeDetail ? (val('lvc_1') + val('lvc_t')) / 2 : val('lvc_global');
+            add(noteLVC * 4, 4);
+        }
+
+        // --- 3. Spécialités ---
+        if (session === '2026') {
+            // Mode Term
+            add(val('spe_abandon_fixe_val') * 8, 8);
+            add(val('term_spe1') * 16, 16);
+            add(val('term_spe2') * 16, 16);
+
+            const optMathSelect = document.getElementById('opt_math_type');
+            if (optMathSelect && optMathSelect.value !== 'none') {
+                add(val('opt_math_val') * 2, 2);
+            }
+            
+            // Grand Oral 2026 = Coeff 10
+            add(val('go') * 10, 10);
+
+        } else {
+            // Mode 1ère (Simulation)
+            const radio = document.querySelector('input[name="abandon_sim"]:checked');
+            if(radio) {
+                const abandon = radio.value;
+                ['spe1', 'spe2', 'spe3'].forEach(spe => {
+                    const isAb = (spe === abandon);
+                    const note = val('note_sim_' + spe);
+                    const box = document.getElementById('box_sim_' + spe);
+                    const lbl = document.getElementById('lbl_sim_' + spe);
+                    
+                    if (isAb) {
+                        if(box) { box.style.borderColor='#fca5a5'; box.style.backgroundColor='#fef2f2'; }
+                        if(lbl) { lbl.innerText = 'Coeff 8'; lbl.style.color='#b91c1c'; }
+                        add(note * 8, 8);
+                    } else {
+                        if(box) { box.style.borderColor='#e2e8f0'; box.style.backgroundColor='#fff'; }
+                        if(lbl) { lbl.innerText = 'Coeff 16'; lbl.style.color='#64748b'; }
+                        add(note * 16, 16);
+                    }
+                });
+            }
+            
+            // Grand Oral 2027 = Coeff 8
+            add(val('go') * 8, 8);
+        }
+
+        // Philo
+        add(val('philo') * 8, 8);
+
+        // Resultat
+        const result = totalCoef > 0 ? (totalPts / totalCoef) : 0;
+        document.getElementById('pts').innerText = totalPts.toFixed(1);
+        document.getElementById('bareme').innerText = totalCoef * 20; 
+        document.getElementById('moyenne').innerText = result.toFixed(2) + "/20";
+        
+        const ment = document.getElementById('mention');
+        if (result === 0) ment.innerText = "Saisissez vos notes";
+        else if(result < 8) ment.innerText = "Recalé";
+        else if(result < 10) ment.innerText = "Rattrapage";
+        else if(result < 12) ment.innerText = "Admis";
+        else if(result < 14) ment.innerText = "Mention Assez Bien";
+        else if(result < 16) ment.innerText = "Mention Bien";
+        else ment.innerText = "Mention Très Bien 👏";
+    }
+
+    window.onload = changeSession;
+</script>
+
+</body>
+</html>
