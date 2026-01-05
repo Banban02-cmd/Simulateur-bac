@@ -130,6 +130,14 @@
         }
         input[type="number"]:focus { border-color: var(--primary); outline: none; }
 
+        select.inp-select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
         .coeff-box {
             background-color: #f1f5f9;
             color: #64748b;
@@ -383,7 +391,7 @@
     </div>
 
     <div id="block_spe_terminale" class="hidden">
-        <h2>3. Épreuves Terminales</h2>
+        <h2>3. Épreuves Terminales & Options</h2>
         
         <div class="row">
             <label>Spécialité 1 (Épreuve)</label>
@@ -395,6 +403,19 @@
             <label>Spécialité 2 (Épreuve)</label>
             <div class="coeff-box">Coeff 16</div>
             <input type="number" id="term_spe2" placeholder="/20" oninput="calc()">
+        </div>
+
+        <div class="row row-option" style="margin-top:20px; background-color:#eff6ff; border-color:#bfdbfe;">
+            <label>Option Maths (Terminale)</label>
+            
+            <div style="grid-column: 2 / span 2; display:flex; gap:10px;">
+                <select id="opt_math_type" class="inp-select" onchange="toggleOptMath()">
+                    <option value="none">Aucune</option>
+                    <option value="compl">Maths Complémentaires (Coeff 2)</option>
+                    <option value="expert">Maths Expertes (Coeff 2)</option>
+                </select>
+                <input type="number" id="opt_math_val" class="hidden" placeholder="/20" oninput="calc()">
+            </div>
         </div>
     </div>
 
@@ -495,6 +516,7 @@
         }
 
         refreshVisibility();
+        toggleOptMath(); // MAJ affichage option maths
         calc();
     }
 
@@ -528,166 +550,21 @@
         calc();
     }
 
+    function toggleOptMath() {
+        const type = document.getElementById('opt_math_type').value;
+        const input = document.getElementById('opt_math_val');
+        
+        if (type === 'none') {
+            input.classList.add('hidden');
+            input.value = '';
+        } else {
+            input.classList.remove('hidden');
+        }
+        calc();
+    }
+
     function refreshVisibility() {
         const globals = document.querySelectorAll('.inp-global');
         const details = document.querySelectorAll('.inp-detail');
 
-        if(modeDetail) {
-            globals.forEach(el => el.classList.add('hidden'));
-            details.forEach(el => el.classList.remove('hidden'));
-        } else {
-            globals.forEach(el => el.classList.remove('hidden'));
-            details.forEach(el => el.classList.add('hidden'));
-        }
-
-        const hasLVC = document.getElementById('check_lvc').checked;
-        const lvcInputs = document.getElementById('lvc_inputs');
-        const lvcCoeff = document.getElementById('lvc_coeff');
-        const lvcPlaceholder = document.getElementById('lvc_placeholder');
-
-        if(hasLVC) {
-            lvcInputs.classList.remove('hidden');
-            lvcCoeff.classList.remove('hidden');
-            lvcPlaceholder.classList.add('hidden');
-            if(modeDetail) {
-                 lvcInputs.querySelector('.inp-global').classList.add('hidden');
-                 lvcInputs.querySelector('.inp-detail').classList.remove('hidden');
-            } else {
-                 lvcInputs.querySelector('.inp-global').classList.remove('hidden');
-                 lvcInputs.querySelector('.inp-detail').classList.add('hidden');
-            }
-        } else {
-            lvcInputs.classList.add('hidden');
-            lvcCoeff.classList.add('hidden');
-            lvcPlaceholder.classList.remove('hidden');
-        }
-    }
-
-    function val(id) {
-        const el = document.getElementById(id);
-        if(!el) return 0;
-        const v = el.value;
-        return v === "" ? 0 : parseFloat(v);
-    }
-
-    function calc() {
-        let totalPts = 0;
-        let totalCoef = 0;
-
-        const add = (pts, coef) => {
-            totalPts += pts;
-            totalCoef += coef;
-        };
-
-        const session = document.getElementById('session_select').value;
-
-        // --- 1. Anticipées ---
-        add(val('fr') * 10, 10);
-        if (session === '2027') {
-            add(val('maths_anticipe') * 2, 2);
-        }
-
-        // --- 2. Tronc Commun / CC ---
-        const matieres = [
-            { id: 'lva', coef: 6 },
-            { id: 'lvb', coef: 6 },
-            { id: 'es', coef: 6 },
-            { id: 'eps', coef: 6 },
-            { id: 'hg', coef: 6 },
-            { id: 'emc', coef: 2 }
-        ];
-
-        matieres.forEach(m => {
-            let noteFinale = 0;
-            if (modeDetail) {
-                const n1 = val(m.id + '_1');
-                const nt = val(m.id + '_t');
-                noteFinale = (n1 + nt) / 2;
-            } else {
-                noteFinale = val(m.id + '_global');
-            }
-            add(noteFinale * m.coef, m.coef);
-        });
-
-        if(document.getElementById('check_lvc').checked) {
-            const coefLVC = 4;
-            let noteLVC = 0;
-            if(modeDetail) {
-                noteLVC = (val('lvc_1') + val('lvc_t')) / 2;
-            } else {
-                noteLVC = val('lvc_global');
-            }
-            add(noteLVC * coefLVC, coefLVC);
-        }
-
-        // --- SPÉCIALITÉS ---
-        if (session === '2026') {
-            // MODE TERMINALE
-            add(val('spe_abandon_fixe_val') * 8, 8); // CC
-            add(val('term_spe1') * 16, 16); // Epreuve
-            add(val('term_spe2') * 16, 16); // Epreuve
-        } else {
-            // MODE 1ÈRE
-            const abandon = document.querySelector('input[name="abandon_sim"]:checked').value;
-            ['spe1', 'spe2', 'spe3'].forEach(spe => {
-                const isAb = (spe === abandon);
-                const box = document.getElementById('box_sim_' + spe);
-                const lbl = document.getElementById('lbl_sim_' + spe);
-                const note = val('note_sim_' + spe);
-
-                if (isAb) {
-                    box.style.backgroundColor = '#fef2f2';
-                    box.style.borderColor = '#fca5a5';
-                    lbl.innerText = 'Coeff 8';
-                    lbl.style.color = '#b91c1c';
-                    add(note * 8, 8);
-                } else {
-                    box.style.backgroundColor = '#fff';
-                    box.style.borderColor = '#e2e8f0';
-                    lbl.innerText = 'Coeff 16';
-                    lbl.style.color = '#64748b';
-                    add(note * 16, 16);
-                }
-            });
-        }
-
-        // --- 4. Autres Finales ---
-        add(val('philo') * 8, 8);
-        
-        // Coeff Grand Oral variable
-        let coeffGO = 10;
-        if (session === '2027') coeffGO = 8;
-        add(val('go') * coeffGO, coeffGO);
-
-        // --- Résultats ---
-        const result = totalCoef > 0 ? (totalPts / totalCoef) : 0;
-        
-        document.getElementById('pts').innerText = totalPts.toFixed(1);
-        document.getElementById('bareme').innerText = totalCoef * 20; 
-        document.getElementById('moyenne').innerText = result.toFixed(2) + "/20";
-
-        const ment = document.getElementById('mention');
-        
-        if (result === 0) {
-             ment.innerText = "Saisissez vos notes";
-        } else if(result < 8) {
-            ment.innerText = "Recalé";
-        } else if(result < 10) {
-            ment.innerText = "Rattrapage";
-        } else if(result < 12) {
-            ment.innerText = "Admis";
-        } else if(result < 14) {
-            ment.innerText = "Mention Assez Bien";
-        } else if(result < 16) {
-            ment.innerText = "Mention Bien";
-        } else {
-            ment.innerText = "Mention Très Bien 👏";
-        }
-    }
-
-    // Init
-    changeSession();
-</script>
-
-</body>
-</html>
+        if(modeDetail
